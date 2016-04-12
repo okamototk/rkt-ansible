@@ -1,0 +1,6 @@
+- hosts: localhost
+  vars:
+    rkt_ver: v1.4.0
+    acbuild_ver: v0.2.2
+  roles:
+  - rkt

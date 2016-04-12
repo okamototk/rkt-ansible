@@ -1,0 +1,45 @@
+---
+- name: Download rkt
+  get_url: url=https://github.com/coreos/rkt/releases/download/{{rkt_ver}}/rkt-{{rkt_ver}}.tar.gz dest=/tmp validate_certs=False
+#  environment: '{{proxy_env}}'
+
+- name: Extract rkt
+  unarchive: src=/tmp/rkt-{{rkt_ver}}.tar.gz dest=/tmp copy=no
+- name: Install rkt
+  command: cp /tmp/rkt-{{rkt_ver}}/rkt /usr/local/bin
+
+- name: Install bash completion
+  command: cp /tmp/rkt-{{rkt_ver}}/bash_completion/rkt.bash /etc/bash_completion.d/
+
+- name: Install manpages
+  command: cp /tmp/rkt-{{rkt_ver}}/manpages/{{item}} /usr/local/share/man/man1/
+  with_items: "{{manpages}}"
+
+- name: Install systemd files
+  command: cp /tmp/rkt-{{rkt_ver}}/init/systemd/{{item}} /usr/lib/systemd/system/  
+  with_items: "{{rkt_services}}"
+
+- name: Initialize rkt
+  shell: sh -c /tmp/rkt-{{rkt_ver}}/scripts/setup-data-dir.sh
+
+- name: Create rkt user
+  user: name=rkt
+
+- name: Create acl's directory
+  file: path=/usr/lib/rkt/stage1-images state=directory recurse=yes owner=rkt group=rkt
+
+- name: Install stage1 acis
+  command: cp /tmp/rkt-{{rkt_ver}}/{{item}} /usr/lib/rkt/stage1-images
+  with_items: "{{state1_acis}}"
+
+- name: Fixed owner
+  command: chown rkt.rkt -R /var/lib/rkt
+
+- name: Install acbuild
+  get_url: url=https://github.com/appc/acbuild/releases/download/{{acbuild_ver}}/acbuild.tar.gz dest=/tmp  validate_certs=False
+
+- name: Install acbuild
+  file: path=/usr/lib/rkt owner=rkt group=rkt
+
+- name: Extract acbuild
+  unarchive: src=/tmp/acbuild.tar.gz dest=/usr/local/bin copy=no

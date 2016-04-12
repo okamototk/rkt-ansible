@@ -1,0 +1,41 @@
+---
+rkt_ver: v1.4.0
+
+acbuild_ver: v0.2.2
+
+manpages:
+- rkt.1
+- rkt_api-service.1
+- rkt_cat-manifest.1
+- rkt_config.1
+- rkt_enter.1
+- rkt_fetch.1
+- rkt_gc.1
+- rkt_image.1
+- rkt_image_cat-manifest.1
+- rkt_image_export.1
+- rkt_image_extract.1
+- rkt_image_gc.1
+- rkt_image_list.1
+- rkt_image_render.1
+- rkt_image_rm.1
+- rkt_list.1
+- rkt_metadata-service.1
+- rkt_prepare.1
+- rkt_rm.1
+- rkt_run.1
+- rkt_run-prepared.1
+- rkt_status.1
+- rkt_trust.1
+- rkt_version.1
+
+state1_acis:
+- stage1-coreos.aci
+- stage1-fly.aci
+- stage1-kvm.aci
+
+rkt_services:
+- rkt-gc.service
+- rkt-gc.timer
+- rkt-metadata.service
+- rkt-metadata.socket
