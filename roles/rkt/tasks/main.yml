@@ -19,6 +19,12 @@
   command: cp /tmp/rkt-{{rkt_ver}}/init/systemd/{{item}} /usr/lib/systemd/system/  
   with_items: "{{rkt_services}}"
 
+- name: Config rkt-gc.service
+  lineinfile: dest="/usr/lib/systemd/system/rkt-gc.service" regexp="/usr/bin/rkt" line="ExecStart=/usr/local/bin/rkt gc --grace-period=${GRACE_PERIOD}"
+
+- name: Config rkt-metadata.service
+  lineinfile: dest="/usr/lib/systemd/system/rkt-metadata.service" regexp="/usr/bin/rkt" line="ExecStart=/usr/local/bin/rkt metadata-service"
+
 - name: Initialize rkt
   shell: sh -c /tmp/rkt-{{rkt_ver}}/scripts/setup-data-dir.sh
 
@@ -34,6 +40,15 @@
 
 - name: Fixed owner
   command: chown rkt.rkt -R /var/lib/rkt
+
+- name: Reload systemd config files
+  command: systemctl daemon-reload
+
+- name: Run rkt services
+  service: name={{item}} enabled=yes state=started
+  with_items:
+  - rkt-metadata.service
+  - rkt-gc.service
 
 - name: Install acbuild
   get_url: url=https://github.com/appc/acbuild/releases/download/{{acbuild_ver}}/acbuild.tar.gz dest=/tmp  validate_certs=False
