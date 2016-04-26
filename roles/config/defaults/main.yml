@@ -1,0 +1,3 @@
+---
+proxy_env:
+ no_proxy:

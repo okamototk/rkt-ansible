@@ -1,7 +1,7 @@
 ---
 - name: Download rkt
   get_url: url=https://github.com/coreos/rkt/releases/download/{{rkt_ver}}/rkt-{{rkt_ver}}.tar.gz dest=/tmp validate_certs=False
-#  environment: '{{proxy_env}}'
+  environment: '{{proxy_env}}'
 
 - name: Extract rkt
   unarchive: src=/tmp/rkt-{{rkt_ver}}.tar.gz dest=/tmp copy=no
@@ -16,20 +16,23 @@
   with_items: "{{manpages}}"
 
 - name: Install systemd files
-  command: cp /tmp/rkt-{{rkt_ver}}/init/systemd/{{item}} /usr/lib/systemd/system/  
+  command: cp /tmp/rkt-{{rkt_ver}}/init/systemd/{{item}} {{systemd_path}}
   with_items: "{{rkt_services}}"
 
 - name: Config rkt-gc.service
-  lineinfile: dest="/usr/lib/systemd/system/rkt-gc.service" regexp="/usr/bin/rkt" line="ExecStart=/usr/local/bin/rkt gc --grace-period=${GRACE_PERIOD}"
+  lineinfile: dest="{{systemd_path}}/rkt-gc.service" regexp="/usr/bin/rkt" line="ExecStart=/usr/local/bin/rkt gc --grace-period=${GRACE_PERIOD}"
 
 - name: Config rkt-metadata.service
-  lineinfile: dest="/usr/lib/systemd/system/rkt-metadata.service" regexp="/usr/bin/rkt" line="ExecStart=/usr/local/bin/rkt metadata-service"
+  lineinfile: dest="{{systemd_path}}/rkt-metadata.service" regexp="/usr/bin/rkt" line="ExecStart=/usr/local/bin/rkt metadata-service"
 
 - name: Initialize rkt
   shell: sh -c /tmp/rkt-{{rkt_ver}}/scripts/setup-data-dir.sh
 
+- name: Create rkt group
+  group: name=rkt state=present
+
 - name: Create rkt user
-  user: name=rkt
+  user: name=rkt state=present
 
 - name: Create acl's directory
   file: path=/usr/lib/rkt/stage1-images state=directory recurse=yes owner=rkt group=rkt
@@ -52,6 +55,7 @@
 
 - name: Install acbuild
   get_url: url=https://github.com/appc/acbuild/releases/download/{{acbuild_ver}}/acbuild.tar.gz dest=/tmp  validate_certs=False
+  environment: '{{proxy_env}}'
 
 - name: Install acbuild
   file: path=/usr/lib/rkt owner=rkt group=rkt

@@ -1,0 +1,52 @@
+---
+# 環境設定を行うためのrole。他のロールを実行する前に
+# 実行する必要あります。
+
+# Setup systemd environment
+- stat: path=/usr/lib/systemd/system
+  register: chk_path1
+
+- set_fact:
+    systemd_path: /usr/lib/systemd/system
+  when: chk_path1.stat.isdir is defined
+
+- stat: path=/lib/systemd/system
+  register: chk_path2
+
+- set_fact:
+    systemd_path: /lib/systemd/system
+  when: chk_path2.stat.isdir is defined
+
+- fail: msg="systemd directory is not found."
+  when: systemd_path is not defined
+
+# Setup proxy
+- set_fact:
+    proxy_env:
+      http_proxy:  "{{http_proxy}}"
+      https_proxy: "{{http_proxy}}"
+      no_proxy:    "{{no_proxy}}"
+  when: http_proxy is defined and http_proxy != None
+
+- lineinfile: dest=/etc/yum.conf
+    regexp="^http_proxy="
+    line="http_proxy={{http_proxy}}"
+  when: http_proxy is defined and http_proxy != None and ansible_os_family == 'RedHat'
+
+# Set firewalld flag
+- command: systemctl is-active firewalld
+  register: chk_firewalld
+  ignore_errors: yes
+
+- set_fact:
+    firewalld: True
+  when: chk_firewalld.rc == 0
+
+# Set ufw (Ubuntu Firewall) flag
+- command: ufw status
+  register: chk_ufw
+  ignore_errors: yes
+
+- set_fact:
+    ufw: True
+  when: chk_ufw.rc == 0 and chk_ufw.stdout.find("Status{{':'}} active") != -1
