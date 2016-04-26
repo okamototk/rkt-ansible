@@ -25,14 +25,14 @@
 - name: Config rkt-metadata.service
   lineinfile: dest="{{systemd_path}}/rkt-metadata.service" regexp="/usr/bin/rkt" line="ExecStart=/usr/local/bin/rkt metadata-service"
 
-- name: Initialize rkt
-  shell: sh -c /tmp/rkt-{{rkt_ver}}/scripts/setup-data-dir.sh
-
 - name: Create rkt group
   group: name=rkt state=present
 
 - name: Create rkt user
   user: name=rkt state=present
+
+- name: Initialize rkt
+  shell: sh -c /tmp/rkt-{{rkt_ver}}/scripts/setup-data-dir.sh
 
 - name: Create acl's directory
   file: path=/usr/lib/rkt/stage1-images state=directory recurse=yes owner=rkt group=rkt
