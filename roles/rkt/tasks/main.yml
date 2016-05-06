@@ -11,6 +11,9 @@
 - name: Install bash completion
   command: cp /tmp/rkt-{{rkt_ver}}/bash_completion/rkt.bash /etc/bash_completion.d/
 
+- name: Create manpages directory
+  file: path=/usr/local/share/man/man1 state=directory
+
 - name: Install manpages
   command: cp /tmp/rkt-{{rkt_ver}}/manpages/{{item}} /usr/local/share/man/man1/
   with_items: "{{manpages}}"
